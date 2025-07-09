@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Behnam Kombat</title>
+    <style>
+        body {
+            margin: 0;
+
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+
+
+            user-select: none;
+
+
+
+
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 90%;
+            padding: 1rem;
+        }
+
+
+        .header div {
+
+            width: 30vw;
+            padding: 0.5rem;
+            margin: 0.5rem;
+            height: 9vh;
+
+            border-radius: 6px;
+            background: linear-gradient(135deg, #002766, #004d99);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
+            border: 2px solid #003d80;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+        }
+
+
+
+        .profile img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+
+        .profile span {
+            margin-top: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .balance {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .main-circle {
+
+            width: 60vw;
+            height: 60vw;
+
+            background-color: #1e1e1e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1rem auto;
+
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            border: 10px solid #290ad7;
+            /* Dark pink border */
+        }
+
+        .main-circle:active {
+            transform: scale(0.9);
+            background-color: #333333;
+        }
+
+        .main-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .footer {
+            width: 100%;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .footer button {
+            background-color: #1e1e1e;
+            color: #ffffff;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .footer button:hover {
+            background-color: #333333;
+        }
+
+        .dollar {
+            position: absolute;
+            font-size: 4rem;
+            color: #00ff00;
+            animation: fly-up 1s ease forwards;
+            pointer-events: none;
+        }
+
+        @keyframes fly-up {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(2);
+            }
+        }
+    </style>
+    <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+</head>
+
+<body>
+    <h2 style="margin-bottom:0px">Behnam Kombat</h2>
+    <div class="header">
+        <div class="profile">
+            <img src="" alt="Profile Photo">
+            <span>...</span>
+        </div>
+
+        <div>
+            <img src="icons/coin.png" style="width: 50px;height: 50px;border-radius: 50%;" alt="Exchange Photo">
+            <span>AirDrop</span>
+        </div>
+
+        <div>
+
+            <img src="icons/binance.png" style="width: 50px;height: 50px;border-radius: 50%;" alt="Exchange Photo">
+            <span>Binance</span>
+        </div>
+
+    </div>
+
+    <strong id="coin-balance" class="balance">Loading ...</strong>
+    <div class="main-circle" id="main-circle">
+        <img src="icons/tap.png" alt="Tap Icon">
+    </div>
+
+    <div class="footer">
+        <button onclick="alert('Airdrop!')">Airdrop</button>
+        <button onclick="alert('About!')">About</button>
+        <button onclick="alert('Games!')">Games</button>
+    </div>
+
+    <script>
+
+
+        // Update the displayed balance
+        function updateBalance() {
+            document.getElementById('coin-balance').textContent = coins;
+        }
+
+        // Create flying dollar animation
+        function createDollarAnimation(x, y) {
+            const dollar = document.createElement('div');
+            dollar.className = 'dollar';
+            dollar.textContent = '$';
+            dollar.style.left = `${x}px`;
+            dollar.style.top = `${y}px`;
+
+            document.body.appendChild(dollar);
+
+            // Remove the dollar element after the animation
+            setTimeout(() => {
+                document.body.removeChild(dollar);
+            }, 1000);
+        }
+
+
+
+        const initData = Telegram.WebApp.initData;
+
+
+        if (initData) {
+
+
+            // Send initData to validate.php
+            fetch('profile.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    auth: initData
+                }),
+
+            })
+                .then(response => response.json())
+                .then(data => {
+                    
+                    document.querySelector('.profile img').src = "users/" + data.id + "/photo.jpg";
+                    document.querySelector('.profile span').innerText = data.first_name;
+                    coins = data.balance || 0;
+                    updateBalance();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+
+
+
+            // Handle circle click
+            async function increaseCoins(event) {
+                coins++;
+                updateBalance();
+
+                // Create the flying dollar animation at the click position
+                createDollarAnimation(event.clientX, event.clientY);
+
+                // Save the updated balance
+                try {
+                    await fetch("add.php", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            add: 1,
+                            auth: initData
+                        }),
+                    });
+                } catch (error) {
+                    console.error('Error saving balance:', error);
+                }
+            }
+
+            document.getElementById('main-circle').addEventListener('click', increaseCoins);
+
+
+        } else {
+            console.error('Telegram.WebApp.initData is undefined');
+        }
+
+
+    </script>
+</body>
+
+</html>
