@@ -2,7 +2,7 @@
 
  function validate($i) {
 
-$bot_token = '7780958123:AAFE6pMSa6-DkV60RcGiriHYfcNQT8C1fzU';
+$bot_token = '7717578531:AAEQ3DotZs11pW11iuoEeJmJhvag19LQEdA';
 
 $data_check_string = $i; // get from Telegram.WebAppData
 
